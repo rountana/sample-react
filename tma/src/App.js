@@ -18,7 +18,7 @@ function App() {
     setCount(newCount);
 
     // For keyboard button Mini Apps: Send count updates to bot
-    // sendCountUpdate(newCount);
+    sendCountUpdate(newCount);
   };
 
   function getCircularReplacer() {
