@@ -139,22 +139,6 @@ function App() {
           </p>
         )}
 
-        <button
-          onClick={handleSendData}
-          style={{
-            backgroundColor: themeParams?.button_color || "#0088cc",
-            color: themeParams?.button_text_color || "#ffffff",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            cursor: "pointer",
-            margin: "10px",
-          }}
-        >
-          Send Test Data to Backend
-        </button>
-
         <div>
           <p>Count: {count}</p>
           <button
