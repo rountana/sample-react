@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import WebApp from "@twa-dev/sdk";
+import { decycle, retrocycle } from "json-decycle";
 
 // Define your backend API endpoint
 const BACKEND_API_ENDPOINT = "http://localhost:5000"; // Replace with your actual backend URL if different
@@ -12,6 +13,45 @@ function App() {
   const [error, setError] = useState(null);
   const [themeParams, setThemeParams] = useState(null);
 
+  const incrementCount = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+
+    // For keyboard button Mini Apps: Send count updates to bot
+    // sendCountUpdate(newCount);
+  };
+
+  function getCircularReplacer() {
+    const seen = new WeakSet();
+    return (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return "[Circular]";
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+  }
+
+  useEffect(() => {
+    if (count > 0) {
+      // Avoid sending initial 0 count
+      fetch("/api/webapp-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ count }),
+      })
+        .then((response) => response.json())
+        .then((data) => console.log("Backend response:", data))
+        .catch((error) => {
+          console.error("Error sending count to backend:", error);
+        });
+    }
+  }, [count]);
+
   useEffect(() => {
     // Check if we're in Telegram Web App environment
     if (
@@ -19,6 +59,24 @@ function App() {
       window.Telegram &&
       window.Telegram.WebApp
     ) {
+      console.log("window.Telegram", window.Telegram);
+      console.log("window.Telegram.WebApp", window.Telegram.WebApp);
+      console.log(
+        "window.Telegram.WebApp.isReady",
+        window.Telegram.WebApp.isReady
+      );
+      console.log(
+        "window.Telegram.WebApp.initData",
+        window.Telegram.WebApp.initData
+      );
+      console.log(
+        "window.Telegram.WebApp.initDataUnsafe",
+        window.Telegram.WebApp.initDataUnsafe
+      );
+      console.log(
+        "window.Telegram.WebApp.initDataUnsafe",
+        window.Telegram.WebApp.initDataUnsafe
+      );
       const tg = window.Telegram.WebApp;
 
       try {
@@ -34,7 +92,7 @@ function App() {
         tg.enableClosingConfirmation();
 
         // Set up main button for keyboard button Mini Apps
-        tg.MainButton.text = "Send Data to Bot";
+        tg.MainButton.text = "Test sending data";
         tg.MainButton.show();
         tg.MainButton.onClick(() => handleSendData());
 
@@ -50,6 +108,7 @@ function App() {
         console.error("WebApp error:", err);
       }
     } else {
+      console.log("Not running in Telegram WebApp environment");
       setError("Not running in Telegram WebApp environment");
       console.warn("Telegram WebApp not available");
     }
@@ -64,6 +123,7 @@ function App() {
   }, []);
 
   const handleSendData = () => {
+    console.log("handleSendData called");
     if (
       typeof window !== "undefined" &&
       window.Telegram &&
@@ -80,6 +140,7 @@ function App() {
         platform: tg.platform,
       };
 
+      // if (count > 0) {
       try {
         console.log("Attempting to send data via fetch to backend:", testData);
         fetch(`${BACKEND_API_ENDPOINT}/api/webapp-data`, {
@@ -113,14 +174,6 @@ function App() {
       console.error("Telegram WebApp not available");
       setError("Telegram WebApp not available");
     }
-  };
-
-  const incrementCount = () => {
-    const newCount = count + 1;
-    setCount(newCount);
-
-    // For keyboard button Mini Apps: Send count updates to bot
-    sendCountUpdate(newCount);
   };
 
   const sendCountUpdate = (newCount) => {
@@ -262,10 +315,10 @@ function App() {
               margin: "5px",
             }}
           >
-            Increment Count (Sends Data)
+            Increment Count
           </button>
 
-          <button
+          {/* <button
             onClick={sendAppLoadedEvent}
             style={{
               backgroundColor: themeParams?.button_color || "#0088cc",
@@ -278,7 +331,7 @@ function App() {
             }}
           >
             Send App Loaded Event
-          </button>
+          </button> */}
         </div>
 
         {/* Keyboard Button Mini App Instructions */}
