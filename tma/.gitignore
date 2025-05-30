@@ -1,9 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+/clipsaver-38f15-firebase-adminsdk-fbsvc-c601f24a22.json
 # dependencies
 /node_modules
 /.pnp
-.pnp.js
+.pnp.
 
 # testing
 /coverage
