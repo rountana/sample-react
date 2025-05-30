@@ -57,36 +57,50 @@ function App() {
     console.log("useEffect: Starting environment check.");
     console.log("useEffect: typeof window:", typeof window);
 
-    let isTelegramEnvironment = false;
+    let isTelegramEnvironment = false; // Initialize to false by default
     if (typeof window !== "undefined") {
       console.log("useEffect: window.Telegram:", window.Telegram);
       console.log("useEffect: window.Telegram.WebApp:", window.Telegram.WebApp);
 
       if (window.Telegram && window.Telegram.WebApp) {
-        // Add new logs here
         console.log(
-          "useEffect: window.Telegram.WebApp.initData:",
+          "useEffect: Checking window.Telegram.WebApp.initData:",
           window.Telegram.WebApp.initData
         );
         console.log(
-          "useEffect: window.Telegram.WebApp.initDataUnsafe:",
+          "useEffect: Checking window.Telegram.WebApp.initDataUnsafe:",
           window.Telegram.WebApp.initDataUnsafe
         );
-        if (window.Telegram.WebApp.initDataUnsafe) {
+
+        // Refined condition: Check for presence of initData and query_id
+        if (
+          window.Telegram.WebApp.initData && // Ensures initData is not empty/null/undefined
+          window.Telegram.WebApp.initData.length > 0 && // Ensures initData is not an empty string
+          window.Telegram.WebApp.initDataUnsafe &&
+          window.Telegram.WebApp.initDataUnsafe.query_id
+        ) {
           console.log(
             "useEffect: window.Telegram.WebApp.initDataUnsafe.query_id:",
             window.Telegram.WebApp.initDataUnsafe.query_id
           );
+          isTelegramEnvironment = true; // Only set to true if these specific conditions are met
         } else {
           console.log(
-            "useEffect: window.Telegram.WebApp.initDataUnsafe is undefined/null"
+            "useEffect: initData is empty or query_id is missing.  NOT true Telegram environment."
           );
+          // isTelegramEnvironment remains false
         }
-        // Original logic for setting isTelegramEnvironment (we will refine this later)
-        isTelegramEnvironment = true;
+      } else {
+        console.log(
+          "useEffect: window.Telegram or window.Telegram.WebApp is not defined."
+        );
+        // isTelegramEnvironment remains false
       }
     }
-    console.log("useEffect: isTelegramEnvironment:", isTelegramEnvironment);
+    console.log(
+      "useEffect: isTelegramEnvironment (final value):",
+      isTelegramEnvironment
+    );
 
     if (isTelegramEnvironment) {
       console.log(
