@@ -61,7 +61,28 @@ function App() {
     if (typeof window !== "undefined") {
       console.log("useEffect: window.Telegram:", window.Telegram);
       console.log("useEffect: window.Telegram.WebApp:", window.Telegram.WebApp);
+
       if (window.Telegram && window.Telegram.WebApp) {
+        // Add new logs here
+        console.log(
+          "useEffect: window.Telegram.WebApp.initData:",
+          window.Telegram.WebApp.initData
+        );
+        console.log(
+          "useEffect: window.Telegram.WebApp.initDataUnsafe:",
+          window.Telegram.WebApp.initDataUnsafe
+        );
+        if (window.Telegram.WebApp.initDataUnsafe) {
+          console.log(
+            "useEffect: window.Telegram.WebApp.initDataUnsafe.query_id:",
+            window.Telegram.WebApp.initDataUnsafe.query_id
+          );
+        } else {
+          console.log(
+            "useEffect: window.Telegram.WebApp.initDataUnsafe is undefined/null"
+          );
+        }
+        // Original logic for setting isTelegramEnvironment (we will refine this later)
         isTelegramEnvironment = true;
       }
     }
