@@ -74,31 +74,6 @@ function App() {
     }
   };
 
-  // Initialize SDK features
-  React.useEffect(() => {
-    if (
-      isReady &&
-      typeof window !== "undefined" &&
-      window.Telegram &&
-      window.Telegram.WebApp
-    ) {
-      try {
-        const tg = window.Telegram.WebApp;
-
-        // Initialize the MainButton
-        tg.MainButton.setText("Send Data to Bot");
-        tg.MainButton.show();
-        tg.MainButton.onClick(handleSendData);
-
-        return () => {
-          tg.MainButton.offClick(handleSendData);
-        };
-      } catch (err) {
-        console.error("MainButton setup error:", err);
-      }
-    }
-  }, [isReady]);
-
   const incrementCount = () => {
     setCount((prevCount) => prevCount + 1);
   };
