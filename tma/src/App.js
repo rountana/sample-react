@@ -3,6 +3,9 @@ import logo from "./logo.svg";
 import "./App.css";
 import WebApp from "@twa-dev/sdk";
 
+// Define your backend API endpoint
+const BACKEND_API_ENDPOINT = "http://localhost:5000"; // Replace with your actual backend URL if different
+
 function App() {
   const [count, setCount] = useState(0);
   const [isReady, setIsReady] = useState(false);
@@ -71,25 +74,40 @@ function App() {
         message: "Hello from React Mini App!",
         timestamp: new Date().toISOString(),
         userAction: "button_click",
-        event: "button_click",
-        // Send initData for proper server-side validation
+        event: "main_button_click", // Changed event name for clarity
         init_data: tg.initData,
         version: tg.version,
         platform: tg.platform,
       };
 
       try {
-        const dataStr = JSON.stringify(testData);
-        console.log("Attempting to send data via sendData():", dataStr);
-
-        // Use sendData() for KEYBOARD BUTTON Mini Apps
-        tg.sendData(dataStr);
-
-        // Show notification
-        tg.showAlert("Data sent to bot!");
+        console.log("Attempting to send data via fetch to backend:", testData);
+        fetch(`${BACKEND_API_ENDPOINT}/api/webapp-data`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(testData),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Data sent successfully to backend:", data);
+            tg.showAlert(data.message || "Data sent to server!");
+          })
+          .catch((err) => {
+            console.error("Error sending data to backend:", err);
+            setError(`Send error: ${err.message}`);
+            tg.showAlert(`Error: ${err.message}`);
+          });
       } catch (err) {
-        console.error("Error sending data:", err);
-        setError(`Send error: ${err.message}`);
+        console.error("Error preparing data for backend:", err);
+        setError(`Client-side send error: ${err.message}`);
+        tg.showAlert(`Client-side error: ${err.message}`);
       }
     } else {
       console.error("Telegram WebApp not available");
@@ -116,17 +134,37 @@ function App() {
         event: "count_update",
         count: newCount,
         timestamp: new Date().toISOString(),
-        init_data: tg.initData,
+        init_data: tg.initData, // Crucial for backend validation and query_id
         version: tg.version,
         platform: tg.platform,
       };
 
       try {
-        const dataStr = JSON.stringify(countData);
-        console.log("Sending count update via sendData():", dataStr);
-        tg.sendData(dataStr);
+        console.log("Sending count update via fetch to backend:", countData);
+        fetch(`${BACKEND_API_ENDPOINT}/api/webapp-data`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(countData),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Count update sent successfully to backend:", data);
+            // Optionally, provide feedback to the user, though it might be too frequent for count updates
+            // tg.showAlert(data.message || "Count updated on server!");
+          })
+          .catch((err) => {
+            console.error("Error sending count update to backend:", err);
+            // setError might be too intrusive for every count update error
+          });
       } catch (err) {
-        console.error("Error sending count update:", err);
+        console.error("Error preparing count update for backend:", err);
       }
     }
   };
@@ -141,20 +179,40 @@ function App() {
       const loadData = {
         event: "app_loaded",
         timestamp: new Date().toISOString(),
-        count: count,
+        count: count, // Send current count state
         init_data: tg.initData,
         version: tg.version,
         platform: tg.platform,
       };
 
       try {
-        const dataStr = JSON.stringify(loadData);
-        console.log("Sending app loaded event via sendData():", dataStr);
-        tg.sendData(dataStr);
-        tg.showAlert("App loaded event sent to bot!");
+        console.log("Sending app loaded event via fetch to backend:", loadData);
+        fetch(`${BACKEND_API_ENDPOINT}/api/webapp-data`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loadData),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("App loaded event sent successfully to backend:", data);
+            tg.showAlert(data.message || "App loaded event sent to server!");
+          })
+          .catch((err) => {
+            console.error("Error sending app loaded event to backend:", err);
+            setError(`App load event error: ${err.message}`);
+            tg.showAlert(`Error sending app load event: ${err.message}`);
+          });
       } catch (err) {
-        console.error("Error sending app loaded event:", err);
-        setError(`Error: ${err.message}`);
+        console.error("Error preparing app loaded event for backend:", err);
+        setError(`Client-side app load error: ${err.message}`);
+        tg.showAlert(`Client-side error: ${err.message}`);
       }
     }
   };
