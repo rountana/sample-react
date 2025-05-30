@@ -30,28 +30,18 @@ function App() {
         // Enable closing confirmation
         tg.enableClosingConfirmation();
 
-        // Set up main button
+        // Set up main button for keyboard button Mini Apps
         tg.MainButton.text = "Send Data to Bot";
         tg.MainButton.show();
         tg.MainButton.onClick(() => handleSendData());
 
         setIsReady(true);
 
-        // Wait a bit before sending data to ensure WebApp is fully ready
-        setTimeout(() => {
-          if (tg.isExpanded || tg.version) {
-            const initData = JSON.stringify({
-              event: "app_loaded",
-              timestamp: new Date().toISOString(),
-              // Send initData for server-side validation instead of using initDataUnsafe
-              init_data: tg.initData,
-              version: tg.version,
-              platform: tg.platform,
-            });
-            console.log("Attempting to send data to bot (on load):", initData);
-            tg.sendData(initData);
-          }
-        }, 1000);
+        // For KEYBOARD BUTTON Mini Apps: Don't auto-send data on load
+        // Let the user explicitly trigger data sending via buttons
+        console.log(
+          "Mini App loaded and ready for keyboard button interaction"
+        );
       } catch (err) {
         setError(`WebApp initialization error: ${err.message}`);
         console.error("WebApp error:", err);
@@ -81,6 +71,7 @@ function App() {
         message: "Hello from React Mini App!",
         timestamp: new Date().toISOString(),
         userAction: "button_click",
+        event: "button_click",
         // Send initData for proper server-side validation
         init_data: tg.initData,
         version: tg.version,
@@ -89,10 +80,12 @@ function App() {
 
       try {
         const dataStr = JSON.stringify(testData);
-        console.log("Attempting to send data from button click:", dataStr);
+        console.log("Attempting to send data via sendData():", dataStr);
+
+        // Use sendData() for KEYBOARD BUTTON Mini Apps
         tg.sendData(dataStr);
 
-        // Also try showing notification
+        // Show notification
         tg.showAlert("Data sent to bot!");
       } catch (err) {
         console.error("Error sending data:", err);
@@ -105,7 +98,65 @@ function App() {
   };
 
   const incrementCount = () => {
-    setCount((prevCount) => prevCount + 1);
+    const newCount = count + 1;
+    setCount(newCount);
+
+    // For keyboard button Mini Apps: Send count updates to bot
+    sendCountUpdate(newCount);
+  };
+
+  const sendCountUpdate = (newCount) => {
+    if (
+      typeof window !== "undefined" &&
+      window.Telegram &&
+      window.Telegram.WebApp
+    ) {
+      const tg = window.Telegram.WebApp;
+      const countData = {
+        event: "count_update",
+        count: newCount,
+        timestamp: new Date().toISOString(),
+        init_data: tg.initData,
+        version: tg.version,
+        platform: tg.platform,
+      };
+
+      try {
+        const dataStr = JSON.stringify(countData);
+        console.log("Sending count update via sendData():", dataStr);
+        tg.sendData(dataStr);
+      } catch (err) {
+        console.error("Error sending count update:", err);
+      }
+    }
+  };
+
+  const sendAppLoadedEvent = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.Telegram &&
+      window.Telegram.WebApp
+    ) {
+      const tg = window.Telegram.WebApp;
+      const loadData = {
+        event: "app_loaded",
+        timestamp: new Date().toISOString(),
+        count: count,
+        init_data: tg.initData,
+        version: tg.version,
+        platform: tg.platform,
+      };
+
+      try {
+        const dataStr = JSON.stringify(loadData);
+        console.log("Sending app loaded event via sendData():", dataStr);
+        tg.sendData(dataStr);
+        tg.showAlert("App loaded event sent to bot!");
+      } catch (err) {
+        console.error("Error sending app loaded event:", err);
+        setError(`Error: ${err.message}`);
+      }
+    }
   };
 
   const tg =
@@ -150,10 +201,58 @@ function App() {
               padding: "8px 16px",
               borderRadius: "6px",
               cursor: "pointer",
+              margin: "5px",
             }}
           >
-            Increment Count
+            Increment Count (Sends Data)
           </button>
+
+          <button
+            onClick={sendAppLoadedEvent}
+            style={{
+              backgroundColor: themeParams?.button_color || "#0088cc",
+              color: themeParams?.button_text_color || "#ffffff",
+              border: "none",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              margin: "5px",
+            }}
+          >
+            Send App Loaded Event
+          </button>
+        </div>
+
+        {/* Keyboard Button Mini App Instructions */}
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            backgroundColor: themeParams?.section_bg_color || "#e8f4fd",
+            borderRadius: "8px",
+            border: `1px solid ${themeParams?.hint_color || "#ccc"}`,
+          }}
+        >
+          <h4
+            style={{
+              margin: "0 0 10px 0",
+              color: themeParams?.accent_text_color || "#0088cc",
+            }}
+          >
+            🎯 Keyboard Button Mini App
+          </h4>
+          <p style={{ margin: "5px 0", fontSize: "14px" }}>
+            • All buttons send data using <code>sendData()</code>
+          </p>
+          <p style={{ margin: "5px 0", fontSize: "14px" }}>
+            • Count updates are sent automatically to bot
+          </p>
+          <p style={{ margin: "5px 0", fontSize: "14px" }}>
+            • Use the blue button at bottom to send manual data
+          </p>
+          <p style={{ margin: "5px 0", fontSize: "14px" }}>
+            • Check your bot logs to see data reception
+          </p>
         </div>
 
         {tg && (
