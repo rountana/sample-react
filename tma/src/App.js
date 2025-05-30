@@ -34,48 +34,42 @@ function App() {
     };
   }
 
-  useEffect(() => {
-    if (count > 0) {
-      // Avoid sending initial 0 count
-      fetch("/api/webapp-data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ count }),
-      })
-        .then((response) => response.json())
-        .then((data) => console.log("Backend response:", data))
-        .catch((error) => {
-          console.error("Error sending count to backend:", error);
-        });
-    }
-  }, [count]);
+  // useEffect(() => {
+  //   if (count > 0) {
+  //     // Avoid sending initial 0 count
+  //     fetch("/api/webapp-data", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ count }),
+  //     })
+  //       .then((response) => response.json())
+  //       .then((data) => console.log("Backend response:", data))
+  //       .catch((error) => {
+  //         console.error("Error sending count to backend:", error);
+  //       });
+  //   }
+  // }, [count]);
 
   useEffect(() => {
     // Check if we're in Telegram Web App environment
-    if (
-      typeof window !== "undefined" &&
-      window.Telegram &&
-      window.Telegram.WebApp
-    ) {
-      console.log("window.Telegram", window.Telegram);
-      console.log("window.Telegram.WebApp", window.Telegram.WebApp);
+    console.log("useEffect: Starting environment check.");
+    console.log("useEffect: typeof window:", typeof window);
+
+    let isTelegramEnvironment = false;
+    if (typeof window !== "undefined") {
+      console.log("useEffect: window.Telegram:", window.Telegram);
+      console.log("useEffect: window.Telegram.WebApp:", window.Telegram.WebApp);
+      if (window.Telegram && window.Telegram.WebApp) {
+        isTelegramEnvironment = true;
+      }
+    }
+    console.log("useEffect: isTelegramEnvironment:", isTelegramEnvironment);
+
+    if (isTelegramEnvironment) {
       console.log(
-        "window.Telegram.WebApp.isReady",
-        window.Telegram.WebApp.isReady
-      );
-      console.log(
-        "window.Telegram.WebApp.initData",
-        window.Telegram.WebApp.initData
-      );
-      console.log(
-        "window.Telegram.WebApp.initDataUnsafe",
-        window.Telegram.WebApp.initDataUnsafe
-      );
-      console.log(
-        "window.Telegram.WebApp.initDataUnsafe",
-        window.Telegram.WebApp.initDataUnsafe
+        "useEffect: Detected Telegram WebApp environment. Initializing..."
       );
       const tg = window.Telegram.WebApp;
 
@@ -108,7 +102,7 @@ function App() {
         console.error("WebApp error:", err);
       }
     } else {
-      console.log("Not running in Telegram WebApp environment");
+      console.log("useEffect: Did NOT detect Telegram WebApp environment.");
       setError("Not running in Telegram WebApp environment");
       console.warn("Telegram WebApp not available");
     }
@@ -122,6 +116,7 @@ function App() {
     };
   }, []);
 
+  // called when the main button is clicked (available in telegram only)
   const handleSendData = () => {
     console.log("handleSendData called");
     if (
